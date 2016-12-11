@@ -8,7 +8,6 @@ RUN set -xe \
   && adduser -D -u 3333 -S -h /var/cache/nginx -s /sbin/nologin -G varnish varnish \
   && mkdir -p /var/lib/varnish \
   && apk add --no-cache varnish \
-  && sed -i -e"s/127.0.0.1:8080/0.0.0.0:80/g" /etc/conf.d/varnishd \
   \
   # Forward logs to docker log collector
   && ln -sf /dev/stdout /var/log/varnish/varnishlog.log \
