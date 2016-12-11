@@ -19,4 +19,4 @@ COPY default.vcl /etc/varnish/default.vcl
 USER varnish
 EXPOSE 8080
 
-CMD ["varnishd", "-F", "-f", "/etc/varnish/default.vcl", "-s", "malloc,${VARNISH_MEMORY}", "-a", "0.0.0.0:8080"]
+CMD ["varnishd", "-F", "-f", "/etc/varnish/default.vcl", "-s", "malloc,128M", "-a", "0.0.0.0:8080"]
