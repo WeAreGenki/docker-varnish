@@ -22,7 +22,7 @@ if [ $# = 1 ] && [ "$1" = 'varnishd' ]; then
 	elif [ ${VARNISH_LOG_ENABLED:-1} -eq 1 ]; then
 		varnishncsa \
 			-n /var/lib/varnish \
-			-F "${VARNISH_LOG_FORMAT:-"%h %u %t \"%r\" %s \"%{Referer}i\" \"%{User-agent}i\" %{Varnish:hitmiss}x"}" \
+			-F "${VARNISH_LOG_FORMAT:-%h %u %t \"%r\" %s \"%{Referer\}i\" \"%{User-agent\}i\" %{Varnish:hitmiss\}x}" \
 			-t 10 $VARNISH_LOG_OPTS &
 	fi
 
