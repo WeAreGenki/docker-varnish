@@ -19,11 +19,12 @@ RUN set -xe \
 		ncurses-dev \
 		pcre-dev \
 		py-docutils \
-		python \
 	&& apk add --no-cache --virtual .varnish-deps \
 		gcc \
 		libc-dev \
+		libedit \
 		libgcc \
+		pcre \
 	&& cd /usr/src \
 	&& curl -fSL https://repo.varnish-cache.org/source/varnish-$VARNISH_VERSION.tar.gz -o varnish.tar.gz \
 	&& PATCH_URL_BASE=http://git.alpinelinux.org/cgit/aports/plain/main/varnish \
@@ -35,14 +36,15 @@ RUN set -xe \
 	&& tar -zxf varnish.tar.gz \
 	&& cd varnish-$VARNISH_VERSION \
 	\
+	# Apply Alpine Linux patches so varnish compiles correctly
 	&& patch -p1 < /usr/src/fix-compat-execinfo.patch \
 	&& patch -p1 < /usr/src/fix-stack-overflow.patch \
 	&& patch -p1 < /usr/src/musl-mode_t.patch \
 	&& patch < /usr/src/varnish-4.1.3_fix_Werror_el6.patch \
 	\
-	# && export CFLAGS="-fstack-protector-strong -fpic -fpie -O3 -m64 -march=broadwell -mtune=generic  -DTCP_FASTOPEN=23" \
-	# 				CPPFLAGS="$CFLAGS" \
-	# 				LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie" \
+	&& export CFLAGS="-fstack-protector-strong -fpic -fpie -O3 -DTCP_FASTOPEN=23" \
+					CPPFLAGS="$CFLAGS" \
+					LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie" \
 	&& ./configure \
 	&& make -j$(getconf _NPROCESSORS_ONLN) \
 	&& make install \
@@ -65,9 +67,10 @@ RUN set -xe \
 COPY default.vcl /etc/varnish/default.vcl
 
 USER varnish
-EXPOSE 8080
+WORKDIR /var/lib/varnish
 
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]
 
+EXPOSE 8080
 CMD ["varnishd"]

@@ -1,68 +1,32 @@
 #!/bin/sh
-set -xe
+set -e
 
-# # first arg is `-f` or `--some-option`
-# # or first arg is `something.conf`
-# if [ "${1#-}" != "$1" ]; then
-# 	set -- varnishd "$@"
-# fi
-#
-# # allow the container to be started with `--user`
-# if [ "$1" = 'redis-server' -a "$(id -u)" = '0' ]; then
-# 	chown -R varnishd .
-# 	exec su-exec redis "$0" "$@"
-# fi
-#
-# exec "$@"
+# If first arg is `something.vcl` test its vcl syntax and return the result
+if [ "${1%.vcl}" != "$1" ]; then
+	set -- -C -f "/var/lib/varnish/$1"
+fi
 
+# If first arg is `-f` or `--some-option` run as a varnishd option
+if [ "${1#-}" != "$1" ]; then
+	set "$@"
+fi
 
-
-if [ "$1" = 'varnishd' ]; then
-	pid=0
-	pid2=0
-
-	# SIGTERM-handler
-	term_handler() {
-		if [ $pid -ne 0 ]; then
-			kill -SIGTERM "$pid"
-			wait "$pid"
-		fi
-
-		if [ $pid2 -ne 0 ]; then
-			kill -SIGTERM "$pid2"
-			wait "$pid2"
-		fi
-
-		exit 143; # 128 + 15 -- SIGTERM
-	}
-
-	# setup handlers
-	# on callback, kill the last background process, which is `tail -f /dev/null` and execute the specified handler
-	trap 'kill ${!}; term_handler' SIGTERM
-
-	# sleep ${VARNISH_D_DELAY:=10}
-	# curl $VARNISH_BACKEND_IP:$VARNISH_BACKEND_PORT
-
-	varnishd -f /etc/varnish/default.vcl \
-					 -s malloc,${VARNISH_MEMORY:-'2G'} \
-					 -n /var/lib/varnish \
-					 -a ${VARNISH_IP:-'0.0.0.0'}:${VARNISH_PORT:-'8080'} \
-					 -F -p cli_timeout=60 -p connect_timeout=60 &
-
-	pid="$!"
-	sleep 5
-
-	if [ ${VARNISH_LOG:=0} -eq 1 ]; then
-		echo "Starting log to console"
-		varnishlog &
-		pid2="$!"
+# Run normally if CMD is unmodified
+if [ $# = 1 ] && [ "$1" = 'varnishd' ]; then
+	# Start logging first if required
+	if [ ${VARNISH_LOG_ENABLED:-0} -eq 1 ]; then
+		varnishlog -n /var/lib/varnish ${VARNISH_LOG_OPTIONS:-'-c'} -t 10 &
 	fi
 
-	# wait indefinetely
-	while true
-	do
-		tail -f /dev/null & wait ${!}
-	done
-else
-	exec "$@"
+	# Next start the varnish daemon as PID 1
+	exec varnishd \
+		-f /etc/varnish/default.vcl \
+		-n /var/lib/varnish \
+		-s malloc,${VARNISH_MEMORY:-32M} \
+		-a "${VARNISH_IP:-0.0.0.0}":${VARNISH_PORT:-8080} \
+		-r cc_command,vcc_allow_inline_c,syslog_cli_traffic,vcc_unsafe_path,vmod_dir,vcl_dir \
+		-F $VARNISH_OPTIONS
 fi
+
+# Fallback for custom user commands
+exec "$@"
