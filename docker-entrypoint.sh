@@ -17,9 +17,8 @@ if [ $# = 1 ] && [ "$1" = 'varnishd' ]; then
 	if [ ${VARNISH_DEBUG_LOG_ENABLED:-0} -eq 1 ]; then
 		varnishlog \
 			-n /var/lib/varnish \
-			-q "${VARNISH_DEBUG_LOG_QUERY:-'*'}" \
-			${VARNISH_DEBUG_LOG_OPTS:-'-c -b -g vxid'} \
-			-t 10 &
+			-q "${VARNISH_DEBUG_LOG_QUERY:-*}" \
+			$VARNISH_DEBUG_LOG_OPTS -t 10 &
 	elif [ ${VARNISH_LOG_ENABLED:-1} -eq 1 ]; then
 		varnishncsa \
 			-n /var/lib/varnish \
@@ -35,7 +34,7 @@ if [ $# = 1 ] && [ "$1" = 'varnishd' ]; then
 		-s malloc,${VARNISH_MEMORY:-32M} \
 		-a "${VARNISH_IP:-0.0.0.0}":${VARNISH_PORT:-8080} \
 		-r cc_command,vcc_allow_inline_c,syslog_cli_traffic,vcc_unsafe_path,vmod_dir,vcl_dir \
-		-F $VARNISH_OPTS
+		-F -p connect_timeout=30 $VARNISH_OPTS
 fi
 
 # Fallback for custom user commands
