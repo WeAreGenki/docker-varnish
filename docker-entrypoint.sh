@@ -20,9 +20,11 @@ if [ $# = 1 ] && [ "$1" = 'varnishd' ]; then
 			-q "${VARNISH_DEBUG_LOG_QUERY:-*}" \
 			-t 10 $VARNISH_DEBUG_LOG_OPTS &
 	elif [ ${VARNISH_LOG_ENABLED:-1} -eq 1 ]; then
-		echo varnishncsa \
+		LOG_FORMAT='%h %u %t "%r" %s "%{Referer}i" "%{User-agent}i" %{Varnish:hitmiss}x'
+		
+		varnishncsa \
 			-n /var/lib/varnish \
-			-F "${VARNISH_LOG_FORMAT:-'%h %u %t \"%r\" %s \"%"{Referer}"i\" \"%"{User-agent}"i\" %"{Varnish:hitmiss}"x'}" \
+			-F "${VARNISH_LOG_FORMAT:-$LOG_FORMAT}" \
 			-t 10 $VARNISH_LOG_OPTS &
 	fi
 
