@@ -18,13 +18,12 @@ if [ $# = 1 ] && [ "$1" = 'varnishd' ]; then
 		varnishlog \
 			-n /var/lib/varnish \
 			-q "${VARNISH_DEBUG_LOG_QUERY:-*}" \
-			$VARNISH_DEBUG_LOG_OPTS -t 10 &
+			-t 10 $VARNISH_DEBUG_LOG_OPTS &
 	elif [ ${VARNISH_LOG_ENABLED:-1} -eq 1 ]; then
 		varnishncsa \
 			-n /var/lib/varnish \
-			${VARNISH_LOG_OPTS:-'-c'} \
-			-F "${VARNISH_LOG_FORMAT:-'%{Varnish:hitmiss}x %h %l %u %t "%r" %s %b "%{Referer}i" "%{User-agent}i"'}" \
-			-t 10 &
+			-F "${VARNISH_LOG_FORMAT:-'%h %u %t "%r" %s "%{Referer}i" "%{User-agent}i" %{Varnish:hitmiss}x'}" \
+			-t 10 $VARNISH_LOG_OPTS &
 	fi
 
 	# Next start the varnish daemon as PID 1
