@@ -11,7 +11,7 @@ If you're on the command-line you can run:
 ```
 docker run -d \
   --name your-varnish \
-  -v /mnt/your-data-dir//varnish/default.vcl:/etc/varnish/default.vcl:ro \
+  -v /mnt/your-data-dir/varnish/default.vcl:/etc/varnish/default.vcl:ro \
   -e VARNISH_MEMORY=128M \
   -e VARNISH_PORT=8080 \
   wearegenki/varnish:latest

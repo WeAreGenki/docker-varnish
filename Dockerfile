@@ -1,6 +1,6 @@
 # Varnish cache image for production
 
-FROM alpine:3.4
+FROM alpine:3.5
 LABEL MAINTAINER="Max Milton <max@wearegenki.com>"
 
 ENV VARNISH_VERSION 4.1.4
