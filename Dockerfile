@@ -1,6 +1,6 @@
 # Varnish cache image for production
 
-FROM alpine:3.10@sha256:ca1c944a4f8486a153024d9965aafbe24f5723c1d5c02f4964c045a16d19dc54
+FROM alpine:3.10@sha256:6a92cd1fcdc8d8cdec60f33dda4db2cb1fcdcacf3410a8e05b3741f44a9b5998
 LABEL MAINTAINER="Max Milton <max@wearegenki.com>"
 
 ENV VARNISH_VERSION 4.1.5
